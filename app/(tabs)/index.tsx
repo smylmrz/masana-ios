@@ -13,6 +13,42 @@ export default function HomeScreen() {
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
 
+  const [habits, setHabits] = useState<HabitType[]>([
+    {
+      id: 2,
+      title: "Do push ups",
+      description: "Habit 1 description",
+      today_completed: false,
+      current_streak: 2,
+      type: 'count',
+      target: 60,
+      current: 0,
+      schedule: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+    },
+    {
+      id: 3,
+      title: "Some random habit",
+      description: "Habit 1 description",
+      today_completed: false,
+      current_streak: 2,
+      type: 'count',
+      target: 1,
+      current: 0,
+      schedule: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+    },
+    {
+      id: 4,
+      title: "Some random habit",
+      description: "Habit 1 description",
+      today_completed: false,
+      current_streak: 2,
+      type: 'count',
+      target: 1,
+      current: 0,
+      schedule: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+    }
+  ]);
+
   const inverseHabits: HabitType[] = [
     {
       id: 1,
@@ -25,21 +61,26 @@ export default function HomeScreen() {
       current: 0,
       schedule: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
     }
-  ]
+  ];
 
-  const habits: HabitType[] = [
-    {
-      id: 2,
-      title: "Some random habit",
-      description: "Habit 1 description",
-      today_completed: false,
-      current_streak: 2,
-      type: 'count',
-      target: 3,
-      current: 0,
-      schedule: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-    }
-  ]
+  const handleHabitPress = (habitId: number) => {
+    setHabits(prevHabits => prevHabits.map(habit => {
+      if (habit.id !== habitId) return habit;
+
+      const target = habit.target ?? 1;
+      const newCurrent = habit.current + 1;
+      const isCompleted = newCurrent >= target;
+
+      return {
+        ...habit,
+        current: newCurrent,
+        today_completed: isCompleted,
+      };
+    }));
+  };
+
+  const incompleteHabits = habits.filter(h => !h.today_completed);
+  const allHabitsCompleted = incompleteHabits.length === 0;
 
   const dotColor = colorScheme === 'dark' ? '#fff' : '#000';
   const inactiveDotColor = colorScheme === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
@@ -60,11 +101,17 @@ export default function HomeScreen() {
           <View style={{ marginBottom: 8 }}>
             <ThemedText>Do</ThemedText>
           </View>
-          <View>
-            {habits.map((habitItem) => (
-              <Habit key={habitItem.id} habit={habitItem} />
-            ))}
-          </View>
+          {allHabitsCompleted ? (
+            <View style={styles.completedContainer}>
+              <ThemedText style={styles.completedText}>All habits completed for today!</ThemedText>
+            </View>
+          ) : (
+            <View style={styles.habitsList}>
+              {incompleteHabits.map((habitItem) => (
+                <Habit key={habitItem.id} habit={habitItem} onPress={handleHabitPress} />
+              ))}
+            </View>
+          )}
         </View>
 
         <View key="2" style={styles.page}>
@@ -105,5 +152,18 @@ const styles = StyleSheet.create({
   },
   page: {
     flex: 1,
+  },
+  habitsList: {
+    gap: 12,
+  },
+  completedContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  completedText: {
+    fontSize: 16,
+    opacity: 0.6,
   },
 });

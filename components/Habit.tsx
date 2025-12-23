@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import HabitStreak from "@/components/HabitStreak";
 import HabitTitle from "@/components/HabitTitle";
 import { IconSquareRoundedCheckFilled, IconSquareRoundedPlusFilled } from "@tabler/icons-react-native";
@@ -18,9 +19,23 @@ export type HabitType = {
 
 type HabitProps = {
   habit: HabitType
+  onPress?: (id: number) => void
 };
 
-const Habit = ({habit}: HabitProps) => {
+const Habit = ({habit, onPress}: HabitProps) => {
+  const handlePress = () => {
+    const target = habit.target ?? 1;
+    const willComplete = habit.current + 1 >= target;
+
+    if (willComplete) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } else {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+
+    onPress?.(habit.id);
+  };
+
   return (
     <View style={styles.container}>
       <View>
@@ -33,8 +48,11 @@ const Habit = ({habit}: HabitProps) => {
       </View>
 
       <View>
-        <Pressable>
-          {habit.target && habit.target > 1 ? <IconSquareRoundedPlusFilled size={40} /> : <IconSquareRoundedCheckFilled size={40} />}
+        <Pressable onPress={handlePress}>
+          {habit.target && habit.target > 1
+            ? <IconSquareRoundedPlusFilled size={40} />
+            : <IconSquareRoundedCheckFilled size={40} />
+          }
         </Pressable>
       </View>
     </View>
