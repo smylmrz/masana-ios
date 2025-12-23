@@ -20,10 +20,11 @@ export type HabitType = {
 type HabitProps = {
   habit: HabitType
   onPress?: (id: number) => void
+  onCardPress?: (habit: HabitType) => void
 };
 
-const Habit = ({habit, onPress}: HabitProps) => {
-  const handlePress = () => {
+const Habit = ({habit, onPress, onCardPress}: HabitProps) => {
+  const handleButtonPress = () => {
     const target = habit.target ?? 1;
     const willComplete = habit.current + 1 >= target;
 
@@ -36,8 +37,13 @@ const Habit = ({habit, onPress}: HabitProps) => {
     onPress?.(habit.id);
   };
 
+  const handleCardPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onCardPress?.(habit);
+  };
+
   return (
-    <View style={styles.container}>
+    <Pressable style={styles.container} onPress={handleCardPress}>
       <View>
         <HabitTitle>{habit.title}</HabitTitle>
 
@@ -48,14 +54,14 @@ const Habit = ({habit, onPress}: HabitProps) => {
       </View>
 
       <View>
-        <Pressable onPress={handlePress}>
+        <Pressable onPress={handleButtonPress}>
           {habit.target && habit.target > 1
             ? <IconSquareRoundedPlusFilled size={40} />
             : <IconSquareRoundedCheckFilled size={40} />
           }
         </Pressable>
       </View>
-    </View>
+    </Pressable>
   )
 }
 

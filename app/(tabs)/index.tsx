@@ -6,10 +6,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedView } from '@/components/themed-view';
 import Habit, { HabitType } from "@/components/Habit";
 import InverseHabit from "@/components/InverseHabit";
+import HabitOverlay from "@/components/HabitOverlay";
 import { ThemedText } from "@/components/themed-text";
 
 export default function HomeScreen() {
   const [currentPage, setCurrentPage] = useState(0);
+  const [selectedHabit, setSelectedHabit] = useState<HabitType | null>(null);
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
 
@@ -79,8 +81,21 @@ export default function HomeScreen() {
     }));
   };
 
+  const handleCardPress = (habit: HabitType) => {
+    setSelectedHabit(habit);
+  };
+
+  const handleOverlayClose = () => {
+    setSelectedHabit(null);
+  };
+
   const incompleteHabits = habits.filter(h => !h.today_completed);
   const allHabitsCompleted = incompleteHabits.length === 0;
+
+  // Keep selectedHabit in sync with habits state
+  const currentSelectedHabit = selectedHabit
+    ? habits.find(h => h.id === selectedHabit.id) ?? null
+    : null;
 
   const dotColor = colorScheme === 'dark' ? '#fff' : '#000';
   const inactiveDotColor = colorScheme === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
@@ -108,7 +123,12 @@ export default function HomeScreen() {
           ) : (
             <View style={styles.habitsList}>
               {incompleteHabits.map((habitItem) => (
-                <Habit key={habitItem.id} habit={habitItem} onPress={handleHabitPress} />
+                <Habit
+                  key={habitItem.id}
+                  habit={habitItem}
+                  onPress={handleHabitPress}
+                  onCardPress={handleCardPress}
+                />
               ))}
             </View>
           )}
@@ -125,6 +145,13 @@ export default function HomeScreen() {
           </View>
         </View>
       </PagerView>
+
+      <HabitOverlay
+        habit={currentSelectedHabit}
+        visible={currentSelectedHabit !== null}
+        onClose={handleOverlayClose}
+        onComplete={handleHabitPress}
+      />
     </ThemedView>
   );
 }
