@@ -21,6 +21,8 @@ export default function HomeScreen() {
       today_completed: false,
       current_streak: 106,
       type: 'inverse',
+      target: null,
+      current: 0,
       schedule: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
     }
   ]
@@ -32,7 +34,9 @@ export default function HomeScreen() {
       description: "Habit 1 description",
       today_completed: false,
       current_streak: 2,
-      type: 'checkbox',
+      type: 'count',
+      target: 3,
+      current: 0,
       schedule: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
     }
   ]

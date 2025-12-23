@@ -21,8 +21,9 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   count: {
-    fontSize: 14,
-    fontWeight: "500"
+    fontSize: 16,
+    fontWeight: "500",
+    fontFamily: "NexaRound-Bold"
   }
 })
 

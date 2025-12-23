@@ -1,7 +1,8 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import HabitStreak from "@/components/HabitStreak";
 import HabitTitle from "@/components/HabitTitle";
-import { IconSquareRoundedCheckFilled } from "@tabler/icons-react-native";
+import { IconSquareRoundedCheckFilled, IconSquareRoundedPlusFilled } from "@tabler/icons-react-native";
+import HabitProgressCounter from "@/components/HabitProgressCounter";
 
 export type HabitType = {
   id: number
@@ -9,7 +10,9 @@ export type HabitType = {
   description: string | null
   today_completed: boolean
   current_streak: number
-  type: 'checkbox' | 'count' | 'inverse',
+  type: 'count' | 'inverse',
+  target: number | null
+  current: number
   schedule: string[]
 }
 
@@ -22,12 +25,16 @@ const Habit = ({habit}: HabitProps) => {
     <View style={styles.container}>
       <View>
         <HabitTitle>{habit.title}</HabitTitle>
-        <HabitStreak streak={habit.current_streak} />
+
+        <View style={styles.progress}>
+          {habit.target && habit.target > 1 && <HabitProgressCounter target={habit.target} current={habit.current}/>}
+          <HabitStreak streak={habit.current_streak} />
+        </View>
       </View>
 
       <View>
         <Pressable>
-          <IconSquareRoundedCheckFilled size={40} />
+          {habit.target && habit.target > 1 ? <IconSquareRoundedPlusFilled size={40} /> : <IconSquareRoundedCheckFilled size={40} />}
         </Pressable>
       </View>
     </View>
@@ -45,6 +52,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#f4f4f4',
     alignItems: 'center',
     minHeight: 80
+  },
+  progress: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12
   }
 });
 
