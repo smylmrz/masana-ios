@@ -21,15 +21,15 @@ const Habit = ({habit}: HabitProps) => {
   return (
     <View style={styles.container}>
       <View>
-        <View>
-          <HabitTitle>{habit.title}</HabitTitle>
-        </View>
+        <HabitTitle>{habit.title}</HabitTitle>
         <HabitStreak streak={habit.current_streak} />
       </View>
 
+      <View>
         <Pressable>
           <IconSquareRoundedCheckFilled size={40} />
         </Pressable>
+      </View>
     </View>
   )
 }
@@ -40,15 +40,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 8,
-    borderRadius: 20,
     padding: 16,
+    borderRadius: 20,
     backgroundColor: '#f4f4f4',
     alignItems: 'center',
-  },
-  title: {
-    fontSize: 20,
-    marginBottom: 8,
-    fontWeight: 'bold',
+    minHeight: 80
   }
 });
 

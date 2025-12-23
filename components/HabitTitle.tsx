@@ -11,7 +11,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 8,
     fontFamily: 'NexaRound-Bold',
-    fontWeight: '600',
+    color: '#000',
   }
 });
 

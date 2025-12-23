@@ -8,9 +8,7 @@ type HabitStreakProps = {
 const HabitStreak = ({ streak }: HabitStreakProps) => {
   return (
     <View style={styles.container}>
-      <View>
-        <IconFlameFilled size={16} color="#ff6b35" />
-      </View>
+      <IconFlameFilled size={16} color="#ff6b35" />
       <Text style={styles.count}>{ streak}</Text>
     </View>
   )

@@ -1,13 +1,18 @@
-import { Image } from 'expo-image';
-import { StyleSheet, View, Text} from 'react-native';
+import { useState } from 'react';
+import { StyleSheet, View, useColorScheme } from 'react-native';
+import PagerView from 'react-native-pager-view';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedView } from '@/components/themed-view';
 import Habit, { HabitType } from "@/components/Habit";
 import InverseHabit from "@/components/InverseHabit";
 import { ThemedText } from "@/components/themed-text";
 
 export default function HomeScreen() {
+  const [currentPage, setCurrentPage] = useState(0);
+  const colorScheme = useColorScheme();
+  const insets = useSafeAreaInsets();
+
   const inverseHabits: HabitType[] = [
     {
       id: 1,
@@ -31,17 +36,23 @@ export default function HomeScreen() {
       schedule: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
     }
   ]
+
+  const dotColor = colorScheme === 'dark' ? '#fff' : '#000';
+  const inactiveDotColor = colorScheme === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView>
-        <View style={{ marginBottom: 16 }}>
+    <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={styles.indicatorContainer}>
+        <View style={[styles.dot, { backgroundColor: currentPage === 0 ? dotColor : inactiveDotColor }]} />
+        <View style={[styles.dot, { backgroundColor: currentPage === 1 ? dotColor : inactiveDotColor }]} />
+      </View>
+
+      <PagerView
+        style={styles.pagerView}
+        initialPage={0}
+        onPageSelected={(e) => setCurrentPage(e.nativeEvent.position)}
+      >
+        <View key="1" style={styles.page}>
           <View style={{ marginBottom: 8 }}>
             <ThemedText>Do</ThemedText>
           </View>
@@ -52,7 +63,7 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        <View>
+        <View key="2" style={styles.page}>
           <View style={{ marginBottom: 8 }}>
             <ThemedText>Stay away from</ThemedText>
           </View>
@@ -62,17 +73,33 @@ export default function HomeScreen() {
             ))}
           </View>
         </View>
-      </ThemedView>
-    </ParallaxScrollView>
+      </PagerView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  indicatorContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    marginTop: 16,
+    gap: 8,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  pagerView: {
+    flex: 1,
+  },
+  page: {
+    flex: 1,
   },
 });
