@@ -2,14 +2,7 @@ import { StyleSheet, View, Pressable } from 'react-native';
 import HabitStreak from "@/components/HabitStreak";
 import HabitTitle from "@/components/HabitTitle";
 import { IconSquareRoundedXFilled } from "@tabler/icons-react-native";
-
-export type HabitType = {
-  id: number
-  title: string
-  description: string | null
-  today_completed: boolean
-  current_streak: number
-}
+import { HabitType } from '@/types/habit';
 
 type HabitProps = {
   habit: HabitType
@@ -19,8 +12,8 @@ const InverseHabit = ({habit}: HabitProps) => {
   return (
     <View style={styles.container}>
       <View>
-        <HabitTitle>{habit.title}</HabitTitle>
-        <HabitStreak streak={habit.current_streak} />
+        <HabitTitle>{habit.name}</HabitTitle>
+        <HabitStreak streak={habit.streak} />
       </View>
 
       <View>

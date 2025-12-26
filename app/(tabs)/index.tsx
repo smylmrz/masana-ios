@@ -3,7 +3,8 @@ import { StyleSheet, View, ScrollView, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedView } from '@/components/themed-view';
-import Habit, { HabitType } from "@/components/Habit";
+import Habit from "@/components/Habit";
+import { HabitType } from "@/types/habit";
 import InverseHabit from "@/components/InverseHabit";
 import HabitOverlay from "@/components/HabitOverlay";
 import { ThemedText } from "@/components/themed-text";
@@ -43,14 +44,18 @@ export default function HomeScreen() {
     setAllHabits(prevHabits => prevHabits.map(habit => {
       if (habit.id !== habitId) return habit;
 
-      const target = habit.target ?? 1;
-      const newCurrent = habit.current + 1;
+      const target = habit.target_count ?? 1;
+      const current = habit.today_log?.current_count ?? 0;
+      const newCurrent = current + 1;
       const isCompleted = newCurrent >= target;
 
       return {
         ...habit,
-        current: newCurrent,
-        today_completed: isCompleted,
+        today_status: isCompleted ? 'completed' : 'partial',
+        today_log: {
+          ...habit.today_log,
+          current_count: newCurrent,
+        },
       };
     }));
   };

@@ -1,7 +1,7 @@
 import { Alert, Modal, Pressable, StyleSheet, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { IconX, IconPencil, IconTrash, IconSnowflake, IconCheck, IconPlus } from '@tabler/icons-react-native';
-import { HabitType } from './Habit';
+import { HabitType } from '@/types/habit';
 import { ThemedText } from './themed-text';
 import HabitStreak from './HabitStreak';
 
@@ -14,6 +14,9 @@ type HabitOverlayProps = {
 
 const HabitOverlay = ({ habit, visible, onClose, onComplete }: HabitOverlayProps) => {
   if (!habit) return null;
+
+  const current = habit.today_log?.current_count ?? 0;
+  const target = habit.target_count ?? 1;
 
   const handleEdit = () => {
     Alert.alert('Edit', 'Edit functionality coming soon');
@@ -28,8 +31,7 @@ const HabitOverlay = ({ habit, visible, onClose, onComplete }: HabitOverlayProps
   };
 
   const handleComplete = () => {
-    const target = habit.target ?? 1;
-    const willComplete = habit.current + 1 >= target;
+    const willComplete = current + 1 >= target;
 
     if (willComplete) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -55,7 +57,7 @@ const HabitOverlay = ({ habit, visible, onClose, onComplete }: HabitOverlayProps
     return schedule.map(d => d.charAt(0).toUpperCase() + d.slice(0, 2)).join(', ');
   };
 
-  const hasProgress = habit.target && habit.target > 1;
+  const hasProgress = target > 1;
 
   return (
     <Modal
@@ -79,15 +81,15 @@ const HabitOverlay = ({ habit, visible, onClose, onComplete }: HabitOverlayProps
           {/* Habit card */}
           <View style={styles.card}>
             <View style={styles.cardHeader}>
-              <ThemedText style={styles.habitTitle}>{habit.title}</ThemedText>
-              <HabitStreak streak={habit.current_streak} />
+              <ThemedText style={styles.habitTitle}>{habit.name}</ThemedText>
+              <HabitStreak streak={habit.streak} />
             </View>
 
             {hasProgress && (
               <View style={styles.progressContainer}>
                 <ThemedText style={styles.progressText}>
-                  <ThemedText style={styles.progressCurrent}>{habit.current}</ThemedText>
-                  <ThemedText style={styles.progressDivider}> / {habit.target}</ThemedText>
+                  <ThemedText style={styles.progressCurrent}>{current}</ThemedText>
+                  <ThemedText style={styles.progressDivider}> / {target}</ThemedText>
                 </ThemedText>
               </View>
             )}

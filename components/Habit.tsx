@@ -4,18 +4,7 @@ import HabitStreak from "@/components/HabitStreak";
 import HabitTitle from "@/components/HabitTitle";
 import { IconSquareRoundedCheckFilled, IconSquareRoundedPlusFilled } from "@tabler/icons-react-native";
 import HabitProgressCounter from "@/components/HabitProgressCounter";
-
-export type HabitType = {
-  id: number
-  title: string
-  description: string | null
-  today_completed: boolean
-  current_streak: number
-  type: 'count' | 'inverse',
-  target: number | null
-  current: number
-  schedule: string[]
-}
+import { HabitType } from "@/types/habit";
 
 type HabitProps = {
   habit: HabitType
@@ -24,9 +13,11 @@ type HabitProps = {
 };
 
 const Habit = ({habit, onPress, onCardPress}: HabitProps) => {
+  const current = habit.today_log?.current_count ?? 0;
+  const target = habit.target_count ?? 1;
+
   const handleButtonPress = () => {
-    const target = habit.target ?? 1;
-    const willComplete = habit.current + 1 >= target;
+    const willComplete = current + 1 >= target;
 
     if (willComplete) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -45,17 +36,17 @@ const Habit = ({habit, onPress, onCardPress}: HabitProps) => {
   return (
     <Pressable style={styles.container} onPress={handleCardPress}>
       <View>
-        <HabitTitle>{habit.title}</HabitTitle>
+        <HabitTitle>{habit.name}</HabitTitle>
 
         <View style={styles.progress}>
-          {habit.target && habit.target > 1 && <HabitProgressCounter target={habit.target} current={habit.current}/>}
-          <HabitStreak streak={habit.current_streak} />
+          {target > 1 && <HabitProgressCounter target={target} current={current}/>}
+          <HabitStreak streak={habit.streak} />
         </View>
       </View>
 
       <View>
         <Pressable onPress={handleButtonPress}>
-          {habit.target && habit.target > 1
+          {target > 1
             ? <IconSquareRoundedPlusFilled size={40} />
             : <IconSquareRoundedCheckFilled size={40} />
           }
