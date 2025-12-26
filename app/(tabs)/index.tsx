@@ -3,17 +3,16 @@ import { StyleSheet, View, ScrollView, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedView } from '@/components/themed-view';
-import Habit from "@/components/Habit";
+import Habit, { CardMeasurements } from "@/components/Habit";
 import { HabitType } from "@/types/habit";
-import InverseHabit from "@/components/InverseHabit";
 import HabitOverlay from "@/components/HabitOverlay";
-import { ThemedText } from "@/components/themed-text";
 import { getTodayHabits } from "@/api/habits";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function HomeScreen() {
   const [selectedHabit, setSelectedHabit] = useState<HabitType | null>(null);
-  const [allHabits, setAllHabits] = useState<HabitType[]>([]);
+  const [cardMeasurements, setCardMeasurements] = useState<CardMeasurements | null>(null);
+  const [habits, setHabits] = useState<HabitType[]>([]);
   const [loading, setLoading] = useState(true);
   const insets = useSafeAreaInsets();
   const { isAuthenticated } = useAuth();
@@ -29,7 +28,7 @@ export default function HomeScreen() {
   const fetchHabits = async () => {
     try {
       const data = await getTodayHabits();
-      setAllHabits(data);
+      setHabits(data);
     } catch (error) {
       console.error('Failed to fetch habits:', error);
     } finally {
@@ -37,11 +36,8 @@ export default function HomeScreen() {
     }
   };
 
-  const habits = allHabits.filter(h => h.type === 'count');
-  const inverseHabits = allHabits.filter(h => h.type === 'inverse');
-
   const handleHabitPress = (habitId: number) => {
-    setAllHabits(prevHabits => prevHabits.map(habit => {
+    setHabits(prevHabits => prevHabits.map(habit => {
       if (habit.id !== habitId) return habit;
 
       const target = habit.target_count ?? 1;
@@ -60,17 +56,19 @@ export default function HomeScreen() {
     }));
   };
 
-  const handleCardPress = (habit: HabitType) => {
+  const handleCardPress = (habit: HabitType, measurements: CardMeasurements) => {
+    setCardMeasurements(measurements);
     setSelectedHabit(habit);
   };
 
   const handleOverlayClose = () => {
     setSelectedHabit(null);
+    setCardMeasurements(null);
   };
 
   // Keep selectedHabit in sync with habits state
   const currentSelectedHabit = selectedHabit
-    ? allHabits.find(h => h.id === selectedHabit.id) ?? null
+    ? habits.find(h => h.id === selectedHabit.id) ?? null
     : null;
 
   if (loading) {
@@ -89,10 +87,6 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View key="habits">
-          <View style={{ marginBottom: 8 }}>
-            <ThemedText>Do</ThemedText>
-          </View>
-
           <View style={styles.habitsList}>
             {habits.map((habitItem) => (
               <Habit
@@ -104,17 +98,6 @@ export default function HomeScreen() {
             ))}
           </View>
         </View>
-
-        <View key="inverse-habits" style={styles.section}>
-          <View style={{ marginBottom: 8 }}>
-            <ThemedText>Stay away from</ThemedText>
-          </View>
-          <View style={styles.habitsList}>
-            {inverseHabits.map((habitItem) => (
-              <InverseHabit key={habitItem.id} habit={habitItem} />
-            ))}
-          </View>
-        </View>
       </ScrollView>
 
       <HabitOverlay
@@ -122,6 +105,7 @@ export default function HomeScreen() {
         visible={currentSelectedHabit !== null}
         onClose={handleOverlayClose}
         onComplete={handleHabitPress}
+        cardMeasurements={cardMeasurements}
       />
     </ThemedView>
   );
