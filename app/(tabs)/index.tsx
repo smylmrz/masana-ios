@@ -1,6 +1,5 @@
-import { useState } from 'react';
-import { StyleSheet, View, useColorScheme } from 'react-native';
-import PagerView from 'react-native-pager-view';
+import { useState, useEffect } from 'react';
+import { StyleSheet, View, ScrollView, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedView } from '@/components/themed-view';
@@ -8,65 +7,40 @@ import Habit, { HabitType } from "@/components/Habit";
 import InverseHabit from "@/components/InverseHabit";
 import HabitOverlay from "@/components/HabitOverlay";
 import { ThemedText } from "@/components/themed-text";
+import { getTodayHabits } from "@/api/habits";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function HomeScreen() {
-  const [currentPage, setCurrentPage] = useState(0);
   const [selectedHabit, setSelectedHabit] = useState<HabitType | null>(null);
-  const colorScheme = useColorScheme();
+  const [allHabits, setAllHabits] = useState<HabitType[]>([]);
+  const [loading, setLoading] = useState(true);
   const insets = useSafeAreaInsets();
+  const { isAuthenticated } = useAuth();
 
-  const [habits, setHabits] = useState<HabitType[]>([
-    {
-      id: 2,
-      title: "Do push ups",
-      description: "Habit 1 description",
-      today_completed: false,
-      current_streak: 2,
-      type: 'count',
-      target: 60,
-      current: 0,
-      schedule: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-    },
-    {
-      id: 3,
-      title: "Some random habit",
-      description: "Habit 1 description",
-      today_completed: false,
-      current_streak: 2,
-      type: 'count',
-      target: 1,
-      current: 0,
-      schedule: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-    },
-    {
-      id: 4,
-      title: "Some random habit",
-      description: "Habit 1 description",
-      today_completed: false,
-      current_streak: 2,
-      type: 'count',
-      target: 1,
-      current: 0,
-      schedule: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchHabits();
+    } else {
+      setLoading(false);
     }
-  ]);
+  }, [isAuthenticated]);
 
-  const inverseHabits: HabitType[] = [
-    {
-      id: 1,
-      title: "Stop drinking energy drinks",
-      description: "Habit 1 description",
-      today_completed: false,
-      current_streak: 106,
-      type: 'inverse',
-      target: null,
-      current: 0,
-      schedule: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+  const fetchHabits = async () => {
+    try {
+      const data = await getTodayHabits();
+      setAllHabits(data);
+    } catch (error) {
+      console.error('Failed to fetch habits:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const habits = allHabits.filter(h => h.type === 'count');
+  const inverseHabits = allHabits.filter(h => h.type === 'inverse');
 
   const handleHabitPress = (habitId: number) => {
-    setHabits(prevHabits => prevHabits.map(habit => {
+    setAllHabits(prevHabits => prevHabits.map(habit => {
       if (habit.id !== habitId) return habit;
 
       const target = habit.target ?? 1;
@@ -89,62 +63,54 @@ export default function HomeScreen() {
     setSelectedHabit(null);
   };
 
-  const incompleteHabits = habits.filter(h => !h.today_completed);
-  const allHabitsCompleted = incompleteHabits.length === 0;
-
   // Keep selectedHabit in sync with habits state
   const currentSelectedHabit = selectedHabit
-    ? habits.find(h => h.id === selectedHabit.id) ?? null
+    ? allHabits.find(h => h.id === selectedHabit.id) ?? null
     : null;
 
-  const dotColor = colorScheme === 'dark' ? '#fff' : '#000';
-  const inactiveDotColor = colorScheme === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
+  if (loading) {
+    return (
+      <ThemedView style={[styles.container, styles.centered, { paddingTop: insets.top }]}>
+        <ActivityIndicator size="large" />
+      </ThemedView>
+    );
+  }
 
   return (
     <ThemedView style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.indicatorContainer}>
-        <View style={[styles.dot, { backgroundColor: currentPage === 0 ? dotColor : inactiveDotColor }]} />
-        <View style={[styles.dot, { backgroundColor: currentPage === 1 ? dotColor : inactiveDotColor }]} />
-      </View>
-
-      <PagerView
-        style={styles.pagerView}
-        initialPage={0}
-        onPageSelected={(e) => setCurrentPage(e.nativeEvent.position)}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
       >
-        <View key="1" style={styles.page}>
+        <View key="habits">
           <View style={{ marginBottom: 8 }}>
             <ThemedText>Do</ThemedText>
           </View>
-          {allHabitsCompleted ? (
-            <View style={styles.completedContainer}>
-              <ThemedText style={styles.completedText}>All habits completed for today!</ThemedText>
-            </View>
-          ) : (
-            <View style={styles.habitsList}>
-              {incompleteHabits.map((habitItem) => (
-                <Habit
-                  key={habitItem.id}
-                  habit={habitItem}
-                  onPress={handleHabitPress}
-                  onCardPress={handleCardPress}
-                />
-              ))}
-            </View>
-          )}
+
+          <View style={styles.habitsList}>
+            {habits.map((habitItem) => (
+              <Habit
+                key={habitItem.id}
+                habit={habitItem}
+                onPress={handleHabitPress}
+                onCardPress={handleCardPress}
+              />
+            ))}
+          </View>
         </View>
 
-        <View key="2" style={styles.page}>
+        <View key="inverse-habits" style={styles.section}>
           <View style={{ marginBottom: 8 }}>
             <ThemedText>Stay away from</ThemedText>
           </View>
-          <View>
+          <View style={styles.habitsList}>
             {inverseHabits.map((habitItem) => (
               <InverseHabit key={habitItem.id} habit={habitItem} />
             ))}
           </View>
         </View>
-      </PagerView>
+      </ScrollView>
 
       <HabitOverlay
         habit={currentSelectedHabit}
@@ -161,24 +127,18 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
   },
-  indicatorContainer: {
-    flexDirection: 'row',
+  centered: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
-    marginTop: 16,
-    gap: 8,
   },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  pagerView: {
+  scrollView: {
     flex: 1,
   },
-  page: {
-    flex: 1,
+  scrollContent: {
+    paddingBottom: 24,
+  },
+  section: {
+    marginTop: 24,
   },
   habitsList: {
     gap: 12,
